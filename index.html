@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GUSANO</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <style>
+        body{
+            margin: 0;
+            padding: 0;
+        }
+        .cajaContenedora{
+            width: 291px;
+            height: 291px;
+            border: 1px solid black;
+            position: relative;
+        }
+        .centrado{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .gusano{
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            top: 140px;
+            left: 140px;
+            right: 140px;
+            bottom: 140px;
+            background-color: black;
+            z-index: 10;
+        }
+        .punto{
+            width: 10px;
+            height: 10px;
+            background-color: red;
+            position: absolute;
+        }
+    </style>
+</head>
+<body>
+    <div class="container text-center mt-2">
+        <div class="centrado">
+            <div><h1>Total : <span id="marcador">0</span></h1></div>
+            <div class="cajaContenedora" id="cajaCont">
+                <div id="gusano" class="gusano"></div>
+            </div>
+            <div class="cajaBotones">
+                <button class="btn btn-primary">Iniciar</button>
+                <button class="btn btn-warning">Reiniciar</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        var contador = $("#marcador");
+        var gusano = $("#gusano");
+        var contenedor = $("#cajaCont");
+        var puntos = document.getElementsByClassName("punto");
+        var posiciones = [];
+        function operacionPunto(arrayPosicion){
+            for(let i = 0; i < puntos.length; i++){
+                console.log(puntos[i].attributes("top"));
+            }
+        }
+        function verificarPosicion(){
+                let Der = parseInt(obtenerDimension(gusano.css("left")));
+                let Arr = parseInt(obtenerDimension(gusano.css("top")));
+                let array = [Der, Arr]
+                for(let i = 0; i < posiciones.length; i++){
+                    if(posiciones[i][0] == array[0] && posiciones[i][1] == array[1]){
+                        if((parseInt(obtenerDimension($(puntos[i]).css("left"))) == posiciones[i][0] && parseInt(obtenerDimension($(puntos[i]).css("top"))) == posiciones[i][1])){
+                            $(puntos[i]).remove();
+                            posiciones.splice(i, 1);
+                            let valor = parseInt(contador.text());
+                            valor++;
+                            contador.text(valor);
+                        }       
+                    }
+            }
+        }
+        setInterval(verificarPosicion, 300)
+        setInterval(crearPunto, 1000)
+        
+        function crearPunto(){
+            if(puntos.length < 3){
+                w = 28;
+                h = 28;
+                let px = parseInt((w - 0 + 1) * Math.random() + 0) * 10;
+                let py = parseInt((w - 0 + 1) * Math.random() + 0) * 10;
+                tamanio = 10;
+                let item = document.createElement("div");
+                item.className = "punto";
+                item.style = "top: " + py + "px; left: " + px + "px;";
+                contenedor.append(item);
+                //console.log("x: " + px+ "  y: "+py);
+                posiciones.push([px, py]);
+            }
+        }
+        function obtenerDimension(v){
+            let valorN = "";
+            for(let i = 0; i < v.length - 2; i++){
+                    valorN += v[i];
+                }
+                let valores = valorN.split(".")
+                return valores[0];
+        }
+        function mover(objeto, desde, donde, d){
+            let distanciaNuevaI = 0;
+            let distanciaNuevaF = 0;
+            let Der = parseInt(obtenerDimension(objeto.css("left")));
+            let Izq = parseInt(obtenerDimension(objeto.css("right")));
+            let Arr = parseInt(obtenerDimension(objeto.css("top")));
+            let Aba = parseInt(obtenerDimension(objeto.css("bottom")));
+            if(desde == "l" && donde == "r"){
+
+                distanciaNuevaI = Der + d;
+                distanciaNuevaF = Izq - d;
+                if(distanciaNuevaF >= 0 && distanciaNuevaI >= 0){
+                    objeto.css("left", distanciaNuevaI + "px");
+                    objeto.css("right", distanciaNuevaF + "px");
+                }
+                
+            }
+            if(desde == "r" && donde == "l"){
+                distanciaNuevaI = Der - d;
+                distanciaNuevaF = Izq + d;
+                if(distanciaNuevaF >= 0 && distanciaNuevaI >= 0){
+                objeto.css("left", distanciaNuevaI + "px");
+                objeto.css("right", distanciaNuevaF + "px");
+                }
+            }
+            if(desde == "t" && donde == "b"){
+                distanciaNuevaI = Aba - d;
+                distanciaNuevaF = Arr + d;
+                if(distanciaNuevaF >= 0 && distanciaNuevaI >= 0){
+                objeto.css("bottom", distanciaNuevaI + "px");
+                objeto.css("top", distanciaNuevaF + "px");
+                }
+            }
+            if(desde == "b" && donde == "t"){
+                distanciaNuevaI = Aba + d;
+                distanciaNuevaF = Arr - d;
+                if(distanciaNuevaF >= 0 && distanciaNuevaI >= 0){
+                objeto.css("bottom", distanciaNuevaI + "px");
+                objeto.css("top", distanciaNuevaF + "px");
+                }
+            }
+        }
+        let intervalo;
+        function M1(){
+            mover(gusano, "b", "t", 10);
+        }
+        function M2(){
+            mover(gusano, "l", "r", 10);
+        }
+        function M3(){
+            mover(gusano, "r", "l", 10);
+        }
+        function M4(){
+            mover(gusano, "t", "b", 10);
+        }
+        $(document).on("keydown", function(e){
+            if(e.key == "w"){
+                if(intervalo != null){
+                    clearInterval(intervalo);
+                }
+                intervalo = setInterval(M1, 300);
+            }
+            if(e.key == "d"){
+                if(intervalo != null){
+                    clearInterval(intervalo);
+                }
+                intervalo = setInterval(M2, 300);
+            }
+            if(e.key == "a"){
+                if(intervalo != null){
+                    clearInterval(intervalo);
+                }
+                intervalo = setInterval(M3, 300);
+            }
+            if(e.key == "s"){
+                if(intervalo != null){
+                    clearInterval(intervalo);
+                }
+                intervalo = setInterval(M4, 300);
+            }
+            // console.log(gusano.css("top"));
+            //console.log(gusano.css("bottom"));
+            // console.log(gusano.css("left"));
+            // console.log(gusano.css("right"));
+        });
+    </script>
+</body>
+</html>
